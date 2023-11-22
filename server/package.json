@@ -6,7 +6,7 @@
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon index.js",
-    "client": "cd .. && cd client/ && npm run dev"
+    "client": "cd .. && cd client/ && npm start"
   },
   "keywords": [],
   "author": "Samrath Chauhan",
