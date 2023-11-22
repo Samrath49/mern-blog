@@ -1,6 +1,12 @@
 import React, { Suspense } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { Login, Signup, Main, Register } from "../../pages";
+import {
+  Login,
+  Signup,
+  Home,
+  AddBlog,
+  DetailedBlog,
+} from "../../pages";
 import { Nav, Footer } from "../../components";
 
 const AppRoutes = () => {
@@ -9,6 +15,32 @@ const AppRoutes = () => {
       <Nav />
       <Routes>
         <Route
+          path="/"
+          element={
+            <Suspense fallback={"Loading..."}>
+              <Home />
+            </Suspense>
+          }
+        />
+        <Route
+          // path="/detail-blog/:id"
+          path="/detailed-blog"
+          element={
+            <Suspense fallback={"Loading..."}>
+              <DetailedBlog />
+            </Suspense>
+          }
+        />
+        <Route
+          // path="/create-blog/:id?"
+          path="/create-blog"
+          element={
+            <Suspense fallback={"Loading..."}>
+              <AddBlog />
+            </Suspense>
+          }
+        />
+        <Route
           path="/login"
           element={
             <Suspense fallback={"Loading..."}>
@@ -16,27 +48,11 @@ const AppRoutes = () => {
             </Suspense>
           }
         />
-         <Route
+        <Route
           path="/signup"
           element={
             <Suspense fallback={"Loading..."}>
               <Signup />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <Suspense fallback={"Loading..."}>
-              <Register />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/"
-          element={
-            <Suspense fallback={"Loading..."}>
-              <Main />
             </Suspense>
           }
         />
