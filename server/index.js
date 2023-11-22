@@ -1,94 +1,39 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const multer = require('multer');
-const path = require('path');
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const app = express();
-const authRoutes = require('./src/routes/authRoute');
-const blogRoutes = require('./src/routes/blogRoute');
+const express = require("express")
+const dotenv = require("dotenv")
+const cors = require("cors")
+const path = require("path")
 
-const port = process.env.PORT || 5000;
-const dbURI = process.env.DB_URI || 'mongodb://localhost:27017/myTestDb';
+const IndexRoute = require("./Routers/index")
+const connectDatabase = require("./Helpers/database/connectDatabase")
+const customErrorHandler = require("./Middlewares/Errors/customErrorHandler")
 
-console.log('@DB', dbURI)
+dotenv.config({
+    path:  './Config/config.env'
+})
 
-async function connectToMongoDB() {
-    const client = new MongoClient(dbURI, {
-      serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-      }
-    });
-  
-    try {
-      await client.connect();
-      await client.db("admin").command({ ping: 1 });
-      console.log("Pinged your deployment. You successfully connected to MongoDB!");
+connectDatabase()
 
-      startServer();
-    } finally {
-      // To force close mongodb connection
-      // await client.close();
-    }
-  }
+const app = express() ;
 
-  function startServer() {
-    
-    const fileStorage = multer.diskStorage({
-        destination: (req, file, cb) => {
-            cb(null, 'images');
-        },
-        filename: (req, file, cb) => {
-            cb(null, new Date().getTime() + '-' + file.originalname);
-        }
-    })
-    
-    const fileFilter = (req, file, cb) => {
-        if( file.mimetype === 'image/png' || 
-            file.mimetype === 'image/jpg' || 
-            file.mimetype === 'image/jpeg'
-        ){
-            cb(null, true);
-        } else {
-            cb(null, false);
-        }
-    }
-    
-    app.use(bodyParser.json());
-    app.use('/images', express.static(path.join(__dirname, 'images')))
-    app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'))
-    
-    app.use((req, res, next) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        next();
-    })
-    
-    app.use('/v1/auth', authRoutes);
-    app.use('/v1/blog', blogRoutes);
-    
-    app.use((error, req, res, next) => {
-        const status = error.errorStatus || 500;
-        const message = error.message;
-        const data = error.data;
-    
-        res.status(status).json(
-            {
-                message: message,
-                data: data
-            }   
-        );
-    })
-  
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
-    });
-  }
-  
-  connectToMongoDB().catch((error) => {
-    console.error("Error connecting to MongoDB:", error);
-  });
+app.use(express.json())
+app.use(cors())
+
+app.use("/",IndexRoute)
+
+app.use(customErrorHandler)
+
+const PORT = process.env.PORT || 5000 ;
+
+app.use(express.static(path.join(__dirname , "public") ))
+
+const server = app.listen(PORT,()=>{
+
+    console.log(`Server running on port  ${PORT} : ${process.env.NODE_ENV}`)
+
+})
+
+process.on("unhandledRejection",(err , promise) =>{
+    console.log(`Logged Error : ${err}`)
+
+    server.close(()=>process.exit(1))
+})
